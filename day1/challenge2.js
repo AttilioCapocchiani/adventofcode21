@@ -1,0 +1,1 @@
+console.log((data = require("fs").readFileSync("input.txt", "utf8").split("\n").map(Number)).reduce((acc, ele, index) =>acc +(index > 2 && ele + data[index - 1] + data[index - 2] > data[index - 1] + data[index - 2] + data[index - 3]), 0))
