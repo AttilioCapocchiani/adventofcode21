@@ -1,0 +1,1 @@
+console.log(Object.values((data = require('fs').readFileSync('input.txt', 'utf8')).split('\n').map(r => r.split(' ')).reduce((acc, curr) => ({h: curr[0] === 'forward' ? acc.h + parseInt(curr[1]) : acc.h, v: curr[0] === 'up' ? acc.v - parseInt(curr[1]) : curr[0] === 'down' ? acc.v + parseInt(curr[1]) : acc.v }), { h: 0, v: 0 })).reduce((a, b) => a * b))
