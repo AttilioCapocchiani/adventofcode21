@@ -1,62 +1,94 @@
-class Entry {
-    constructor (str) {
-        const [ input, output ] = str.split(' | ')
-        this.input = input.trim().split(' ')
-        this.output = output.trim()
-    }
+const fs = require('fs');
+var rawData = fs.readFileSync(__dirname + '/input.txt').toString();
+var data = rawData.split(/\r?\n/)
+var total = 0
 
-    get decoded () {
-        const map = {}
-        const keys = {}
+data.forEach(element => {
+    var samples = element.split('|')[0].trim().split(' ')
+    numbers = Array(7)
+    var key = Array(7)
 
-        map['1'] = this.input.find(( { length } ) => length === 2)
-        map['7'] = this.input.find(( { length } ) => length === 3)
-        keys['0'] = [...map['7']].filter(e => ![...map['1']].includes(e))
+    numbers[1] = samples.find(x => x.length === 2)
+    numbers[7] = samples.find(x => x.length === 3)
+    key[0] = [...numbers[7]].filter(x => ![...numbers[1]].includes(x))
 
-        map['6'] = this.findSix(map['1'])
-        keys['2'] = [...map['1']].filter(x => ![...map['6']].includes(x))
-        keys['5'] = [...map['1']].filter(x => [...map['6']].includes(x))
+    numbers[6] = findSix(samples.filter(x => x.length === 6), numbers[1])
+    key[2] = [...numbers[1]].filter(x => ![...numbers[6]].includes(x));
+    key[5] = [...numbers[1]].filter(x => [...numbers[6]].includes(x));
 
-        map['5'] = this.findFive(map['2'])
-        map['2'] = this.findTwo(map['2'])
-        map['3'] = this.findThree(map['6'])
+    numbers[5] = findFive(samples.filter(x => x.length === 5), key)
+    numbers[2] = findTwo(samples.filter(x => x.length === 5), key)
+    numbers[3] = findThree(samples.filter(x => x.length === 5), key)
+    key[4] = [...numbers[2] + key[5]].filter(x => ![...numbers[3]].includes(x))
+    key[1] = [...numbers[5] + key[2]].filter(x => ![...numbers[3]].includes(x))
+
+    numbers[4] = samples.find(x => x.length === 4)
+    key[6] = [...numbers[5] + key[2]].filter(x => ![...numbers[4] + key[0]].includes(x))
+
+    numbers[8] = samples.find(x => x.length === 7)
+    numbers[0] = findZero(samples.filter(x => x.length === 6), key)
+    key[3] = [...numbers[8]].filter(x => ![...numbers[0]].includes(x))
+
+    numbers[9] = findNine(samples.filter(x => x.length === 6), key)
+
+    numbers = numbers.map(number => number.split('').sort().join(''))
+    var answer = ''
+    element.split('|')[1].trim().split(' ').forEach(question => {
+        question = question.split('').sort().join('')
+        answer += numbers.indexOf(question).toString()
+        if (answer == -1)
+            console.log(element)
+    })
+    total += parseInt(answer)
+})
+
+console.log(total)
 
 
-        return map
-    }
-
-    findTwo (fivePattern) {
-
-    }
-
-    findFive (twoPattern) {
-        let output
-        this.input.filter(({ length }) => length === 5).forEach(option => {
-            if (option.includes(twoPattern)) {
-                output = option
-            }
-        }
-
-        return output
-    }
-
-    findSix (onePattern) {
-        let output = ''
-        this.input
-            .filter(({ length }) => length === 6)
-            .forEach(option => {
-                if (option.includes(onePattern.charAt(0)) != option.includes(onePattern.charAt(1))) output = option;
-            }
-        )  ;
-        return output;
-    }
+function findSix(options, one) {
+    var output
+    options.forEach(option => {
+        if (option.includes(one.charAt(0)) != option.includes(one.charAt(1))) output = option
+    })
+    return output
 }
 
+function findFive(options, key) {
+    var output
+    options.forEach(option => {
+        if (!option.includes(key[2])) output = option
+    })
+    return output
+}
 
-const data = require('fs').readFileSync('input.txt', 'utf8').split('\n')
+function findTwo(options, key) {
+    var output
+    options.forEach(option => {
+        if (!option.includes(key[5])) output = option
+    })
+    return output
+}
 
-console.log(
-    data
-        .map(s => new Entry(s))
-        .map(e => e.decoded)
-)
+function findThree(options, key) {
+    var output
+    options.forEach(option => {
+        if (option.includes(key[5]) && option.includes(key[2])) output = option
+    })
+    return output
+}
+
+function findZero(options, key) {
+    var output
+    options.forEach(option => {
+        if (option.includes(key[2]) && option.includes(key[4])) output = option
+    })
+    return output
+}
+
+function findNine(options, key) {
+    var output
+    options.forEach(option => {
+        if (!option.includes(key[4])) output = option
+    })
+    return output
+}
